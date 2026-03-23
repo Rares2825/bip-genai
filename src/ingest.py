@@ -1,39 +1,52 @@
-"""
-====================================================================
-⚙️ BACKEND INSTRUCTIONS: DATA INGESTION (vector_db)
-====================================================================
-The goal of this script is to take the PDF documents from the `data/` folder,
-split them into smaller chunks, convert them into embeddings, 
-and save them into a local ChromaDB vector database.
-
-The Backend team needs to complete the code below.
-"""
-
 import os
-# TODO 1: Import PyPDFDirectoryLoader from langchain_community.document_loaders
-# TODO 2: Import RecursiveCharacterTextSplitter from langchain.text_splitter
-# TODO 3: Import HuggingFaceEmbeddings from langchain_community.embeddings
-# TODO 4: Import Chroma from langchain_community.vectorstores
+from langchain_community.document_loaders import PyPDFDirectoryLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import Chroma
 
-DATA_PATH = "../data/"     # This is where the DEW21 PDFs are stored
-DB_PATH = "../vector_db/"  # This is where the database will be saved
+# Atentie: Presupunem ca rulezi scriptul din radacina proiectului!
+DATA_PATH = "data/"
+DB_PATH = "vector_db/"
 
 def create_vector_db():
-    print("1. Loading documents...")
-    # TODO 5: Use PyPDFDirectoryLoader to read all PDFs from DATA_PATH.
+    print("📂 1. Cautam documente PDF in folderul data/...")
+    # Verificam daca folderul exista
+    if not os.path.exists(DATA_PATH):
+        print(f"❌ Eroare: Nu gasesc folderul {DATA_PATH}. Creeaza-l si pune PDF-uri in el.")
+        return
+
+    loader = PyPDFDirectoryLoader(DATA_PATH)
+    documents = loader.load()
     
-    print("2. Splitting text (Chunking)...")
-    # TODO 6: Set up RecursiveCharacterTextSplitter. 
-    # Hint: For legal documents (AGBs), try chunk_size=1000 and chunk_overlap=200.
-    # If it cuts sentences poorly, adjust these numbers!
+    if not documents:
+        print("❌ Eroare: Folderul data/ este gol. Pune PDF-urile DEW21 acolo.")
+        return
+
+    print(f"✅ Am gasit si incarcat {len(documents)} pagini de PDF.")
+
+    print("✂️ 2. Incepem taierea textului (Chunking)...")
+    # Tăiem textul în bucăți de 1000 de caractere. 
+    # Lăsăm un 'overlap' (suprapunere) de 200 de caractere ca să nu tăiem o lege la jumătate și să pierdem contextul.
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, 
+        chunk_overlap=200,
+        separators=["\n\n", "\n", ".", " ", ""] # Incearca sa taie la sfarsit de paragraf/propozitie
+    )
+    chunks = text_splitter.split_documents(documents)
+    print(f"✅ Am impartit documentele in {len(chunks)} bucati de text (chunks).")
+
+    print("🧠 3. Descarcam modelul multilingv si cream baza de date ChromaDB...")
+    # Acest model este perfect pentru Germana si Engleza. Se va descarca automat (are cam 400MB).
+    embeddings = HuggingFaceEmbeddings(model_name="paraphrase-multilingual-MiniLM-L12-v2")
     
-    print("3. Generating Embeddings and Saving to ChromaDB...")
-    # TODO 7: Initialize the "paraphrase-multilingual-MiniLM-L12-v2" model (great for Ger/Eng).
-    # TODO 8: Save the document chunks into Chroma using persist_directory=DB_PATH.
-    
-    print("✅ Vector database successfully created!")
+    # Cream baza de date si o salvam pe disk
+    db = Chroma.from_documents(
+        documents=chunks, 
+        embedding=embeddings, 
+        persist_directory=DB_PATH
+    )
+    db.persist() # Salvam fortat fisierele
+    print(f"🚀 GATA! Baza de date a fost salvata cu succes in folderul '{DB_PATH}'!")
 
 if __name__ == "__main__":
-    # Run this script from the terminal: python src/ingest.py
-    # create_vector_db() # Uncomment this after writing the code
-    pass
+    create_vector_db()

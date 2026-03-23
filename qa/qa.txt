@@ -1,0 +1,22 @@
+====================================================================
+📋 INSTRUCTIONS FOR THE QA (Quality Assurance) & EVALUATION TEAM
+====================================================================
+
+YOUR ROLE: 
+You are the "Devil's Advocate". In a legal/regulatory system (like DEW21 AGBs), the biggest risk is AI "hallucination" (making up rules that do not exist). Your job is to prevent this!
+
+YOUR TASKS FOR DAYS 1-2 (While developers write the core code):
+1. Read the provided DEW21 documents (Terms & Conditions / Federal Network Agency).
+2. Create an Excel file (you can save it in this folder, e.g., `dew21_tests.xlsx`).
+3. Fill the spreadsheet with at least 30 realistic questions that customers or employees might ask.
+   Your table columns should be:
+   | ID | Question (Ger/Eng) | Expected Correct Answer | Source Document & Page | Test Result (Pass/Fail) |
+
+YOUR TASKS FOR DAYS 3-4 (After receiving the UI prototype):
+1. Run the Streamlit application on your local machine.
+2. Take each question from your Excel file and ask the AI.
+3. Compare the AI's response with your "Expected Correct Answer".
+4. CRUCIAL: Verify if the AI cited the correct source (document and page)!
+5. Make a list of all the questions the AI failed or hallucinated on, and give it to the Backend team so they can fix the system prompt.
+
+Golden Rule: It is much better for the AI to say "I don't know" than to invent a fake law!
