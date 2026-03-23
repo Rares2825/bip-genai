@@ -1,0 +1,13 @@
+# Python si medii virtuale
+venv/
+env/
+__pycache__/
+*.pyc
+
+# Date sensibile si baze de date (MANDATORIU)
+data/
+vector_db/
+.env
+
+# Fisiere de workspace VS Code (optional, ca sa nu incurce)
+*.code-workspace
